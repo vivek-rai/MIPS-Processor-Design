@@ -1,0 +1,27 @@
+//instr_decoder.vp
+module `mname`(
+input logic [5:0] instr,
+output logic [6:0] alu_op,
+output logic source_1_sel,branch,jump,wb_source,reg_dst,mem_rd_en,mem_wr_en,reg_write,branch_neq,branch_gt);
+logic [16:0] control;
+always_comb
+	begin
+	case(instr)
+	6'b000000:    control = 17'b0100000_0_0_0_0_1_0_0_1_0_0;    //R Type Instruction
+	6'b001000:    control = 17'b0000001_1_0_0_0_0_0_0_1_0_0;    //ADD I
+	6'b001100:    control = 17'b0000010_1_0_0_0_0_0_0_1_0_0;    //AND I 
+	6'b000100:    control = 17'b1000000_0_1_0_0_0_0_0_0_0_0;	   //Branch Equal
+	6'b000111:    control = 17'b1000000_0_0_0_0_0_0_0_0_0_1;	   //Branch Greater than
+	6'b000101:    control = 17'b1000000_0_0_0_0_0_0_0_0_1_0;	   //Branch Not Equal
+	6'b000010:    control = 17'b0000000_0_0_1_0_0_0_0_0_0_0;	   //Jump
+	6'b100011:    control = 17'b0000001_1_0_0_0_0_1_0_1_0_0;	   //Load
+	6'b001101:    control = 17'b0000100_1_0_0_0_0_0_0_1_0_0;	   //OR I
+	6'b001010:    control = 17'b0001000_1_0_0_0_0_0_0_1_0_0;	   //SLT I
+    6'b101011:    control = 17'b0000001_1_0_0_0_0_0_1_0_0_0;	   //Store
+	6'b001110:    control = 17'b0010000_1_0_0_0_0_0_0_1_0_0;	   //XOR I
+	endcase
+      //$display("control %b load %d store %d instr %b",control,mem_rd_en,mem_wr_en,instr);
+    end
+assign {alu_op,source_1_sel,branch,jump,wb_source,reg_dst,mem_rd_en,mem_wr_en,reg_write,branch_neq,branch_gt} = control;
+endmodule
+

@@ -1,0 +1,31 @@
+//inst_mem.vp
+module `mname`(
+  input logic [6:0] address_read_1,
+  output logic [31:0] read_data_1);
+  logic [31:0] im [127:0];
+  initial
+begin
+im[0] = 32'h20020005;
+im[1] = 32'h2003000c;
+im[2] = 32'h2067fff7;
+im[3] = 32'h00e22025;
+im[4] = 32'h00642824;
+im[5] = 32'h00a42820;
+im[6] = 32'h10a7000a;
+im[7] = 32'h0064202a;
+im[8] = 32'h10800001;
+im[9] = 32'h20050000;
+im[10] = 32'h00e2202a;
+im[11] = 32'h00853820;
+im[12] = 32'h00e23822;
+im[13] = 32'hac670044;
+im[14] = 32'h8c020050;
+im[15] = 32'h08000011;
+im[16] = 32'h20020001;
+im[17] = 32'hac020054;
+  //$readmemh("inst.dat",im);
+end
+  always_comb
+    //$display("Instruction Module-instr %d",read_data_1);
+  assign read_data_1 = im[address_read_1];
+endmodule

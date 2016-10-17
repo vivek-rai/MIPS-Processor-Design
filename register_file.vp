@@ -1,0 +1,25 @@
+//register_file.vp
+module `mname`(
+  input logic clk,
+  input logic [4:0] address_read_1,address_read_2,
+  input logic [4:0] address_write_1,
+  input logic [31:0] write_data,
+  input logic write_en,
+  output logic [31:0] read_data_1,read_data_2);
+  logic [31:0] rf [31:0];
+  logic [31:0] read_data_1_reg,read_data_2_reg;
+  always_ff@(posedge clk)
+    begin
+      if(write_en && !(address_write_1 == 5'd0))
+    		rf[address_write_1] <= write_data;
+    end
+  always_ff@(negedge clk)
+    begin
+      read_data_1_reg <= (address_read_1 == 5'd0)?32'd0:rf[address_read_1];
+      read_data_2_reg <= (address_read_2 == 5'd0)?32'd0:rf[address_read_2];
+    end
+  initial
+    @(negedge clk) $display("Register File-read_data_1 %d read_data_1 %d RF_0 %d address_write %d write data %d time %t",read_data_1_reg,read_data_1_reg,rf[0],address_write_1,write_data,$time);
+assign read_data_1 = read_data_1_reg;
+assign read_data_2 = read_data_2_reg;
+endmodule

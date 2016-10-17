@@ -1,0 +1,72 @@
+//mips.vp
+module `mname`(
+  input logic clk,
+  input logic rstn,
+  output logic [31:0] alu_out_final);
+  logic [31:0] pc_in,pc_out,pc_plus_four;
+  logic source_1_sel,branch,jump,wb_source,reg_dst,mem_rd_en,mem_wr_en,reg_write,branch_neq,branch_gt;
+  logic [4:0] address_write_1;
+  logic [31:0] read_data_1,read_data_2; 
+  logic [31:0] imm_address,inst_sign_ext,alu_input_b,alu_out;
+  logic [7:0] alu_control_out;
+  logic [6:0] alu_op;
+  logic [31:0] branch_or_jr,pc_branch,pc_plus_four_or_branch_jr;
+  logic [27:0] jump_imm;
+  logic b_or_jr,zero,branch_zero,branch_grater_than,branch_not_equal;
+  logic [31:0] inst;
+  logic [31:0] write_data;
+  logic [31:0] mem_data;
+  //pc module//
+  //; my $pcmodule= generate( "pc","pc_module");
+  `$pcmodule->instantiate() `(.clk(clk), .rstn(rstn), .pc_in(pc_in), .pc_out(pc_out));
+  //pc + 4 adder//
+  //; my $pc_adder_module= generate( "adder","pc_adder");
+  `$pc_adder_module->instantiate() `(.adder_input_a(pc_out), .adder_input_b(32'd4), .adder_out(pc_plus_four));
+  assign branch_zero = (branch & zero);
+  assign branch_grater_than = (branch_gt & ~(alu_out[31]));
+  assign branch_not_equal = (branch_neq & ~(zero));
+  assign imm_address = (inst_sign_ext << 2);
+  //; my $muxbranch_or_jr= generate( "mux_2_1_two_control","mux_branch_or_jr");
+  `$muxbranch_or_jr->instantiate() `(.mux_control_1(jump_reg), .mux_control_2(branch_zero), .mux_input_1(read_data_1), .mux_input_2(imm_address), .mux_output(branch_or_jr));
+  //Branch Adder//
+  //; my $branchor_jr_module= generate( "adder","branch_or_jr_module");
+  `$branchor_jr_module->instantiate() `(.adder_input_a(pc_plus_four), .adder_input_b(branch_or_jr), .adder_out(pc_branch));
+  assign b_or_jr = (jump_reg | branch_zero | branch_grater_than | branch_not_equal);
+  //; my $muxpc_branch= generate( "mux_2_1","mux_pc_branch");
+  `$muxpc_branch->instantiate() `(.mux_control(b_or_jr), .mux_input_1(pc_branch), .mux_input_2(pc_plus_four), .mux_out(pc_plus_four_or_branch_jr));
+  assign jump_imm = (inst[25:0] << 2);
+  //; my $muxpc_branch_jump= generate( "mux_2_1","mux_pc_branch_jump");
+  `$muxpc_branch_jump->instantiate() `(.mux_control(jump), .mux_input_1({pc_plus_four[31:28], jump_imm}), .mux_input_2(pc_plus_four_or_branch_jr), .mux_out(pc_in));
+  //; my $mux_rfdst= generate( "mux_2_1_5bit","mux_rf_dst");
+  `$mux_rfdst->instantiate() `(.mux_control(reg_dst), .mux_input_1(inst[15:11]), .mux_input_2(inst[20:16]), .mux_out(address_write_1));
+  //Instruction Memory//
+  //; my $immodule= generate( "inst_mem","im_module");
+  `$immodule->instantiate() `(.address_read_1(pc_out[8:2]), .read_data_1(inst));
+  //Register File//
+  //; my $rfmodule= generate( "register_file","rf_module");
+  `$rfmodule->instantiate() `(.clk(clk), .address_read_1(inst[25:21]), .address_read_2(inst[20:16]), .address_write_1(address_write_1), .write_data(write_data), .write_en(reg_write), .read_data_1(read_data_1), .read_data_2(read_data_2)); 
+  assign inst_sign_ext = {{16{inst[15]}},{inst[15:0]}};
+  //; my $muxalu_src= generate( "mux_2_1","mux_alu_src");
+  `$muxalu_src->instantiate() `(.mux_control(source_1_sel), .mux_input_1(inst_sign_ext), .mux_input_2(read_data_2), .mux_out(alu_input_b));
+  //ALU Module//
+  //; my $alumodule= generate( "alu","alu_module");
+  `$alumodule->instantiate() `(.alu_input_a(read_data_1), .alu_input_b(alu_input_b), .alu_control(alu_control_out), .alu_out(alu_out), .zero(zero));
+  //Data Memory//
+  //; my $dmmodule= generate( "data_memory","dm_module");
+  `$dmmodule->instantiate() `(.write_en(mem_wr_en), .read_en(mem_rd_en), .address(alu_out[8:2]), .write_data(read_data_2), .data(mem_data));
+  //; my $mux_wbselect= generate( "mux_2_1","mux_wb_select");
+  `$mux_wbselect->instantiate() `(.mux_control(wb_source), .mux_input_1(mem_data), .mux_input_2(alu_out), .mux_out(write_data));
+  
+  //COntrol Unit//
+  //Instruction (Main) Decoder//
+  //; my $inst_decodermodule= generate( "instr_decoder","inst_decoder_module");
+  `$inst_decodermodule->instantiate() `(.instr(inst[31:26]), .alu_op(alu_op), .source_1_sel(source_1_sel), .branch(branch), .jump(jump), .wb_source(wb_source), .reg_dst(reg_dst), .mem_rd_en(mem_rd_en), .mem_wr_en(mem_wr_en), .reg_write(reg_write), .branch_neq(branch_neq), .branch_gt(branch_gt));
+  //ALU Decoder//
+  //; my $alu_decodermodule= generate( "alu_decoder","alu_decoder_module");
+  `$alu_decodermodule->instantiate() `(.alu_op(alu_op), .func(inst[5:0]), .alu_control_out(alu_control_out), .jump_reg(jump_reg)); 
+  assign alu_out_final = alu_out;
+  //always_comb
+    //$display("alu output %d alu input_a %d alu_input_b %d instr %b pc next %b time %t",alu_out,read_data_1,alu_input_b,inst,pc_in,$time);
+endmodule
+
+  

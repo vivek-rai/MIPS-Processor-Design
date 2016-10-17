@@ -1,0 +1,25 @@
+//alu.vp
+module `mname`(
+input logic signed [31:0] alu_input_a, alu_input_b,
+input logic [7:0] alu_control,
+output logic signed [31:0] alu_out,
+output logic zero);
+  logic [31:0] alu_out_reg;
+always_comb
+	begin
+	case(alu_control)
+	8'b00000001: alu_out_reg = alu_input_a + alu_input_b;
+	8'b00000010: alu_out_reg = alu_input_a - alu_input_b;
+	8'b00000100: alu_out_reg = alu_input_a & alu_input_b;
+	8'b00001000: alu_out_reg = alu_input_a | alu_input_b;
+	8'b00010000: alu_out_reg = alu_input_a ^ alu_input_b;
+    8'b00100000: alu_out_reg = !(alu_input_a | alu_input_b);
+	8'b01000000: alu_out_reg = (alu_input_a >>> alu_input_b[10:6]);
+	8'b10000000: alu_out_reg = (alu_input_a < alu_input_b)?32'd1:32'd0;
+	endcase
+	end
+  always_comb
+    $display("ALU Module-alu control %d input_a %d input_b %d",alu_control,alu_input_a,alu_input_b);
+assign zero = ((alu_input_a - alu_input_b)==32'd0)?1'b1:1'b0;
+assign alu_out = alu_out_reg;
+endmodule

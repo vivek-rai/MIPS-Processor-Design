@@ -1,0 +1,36 @@
+//top_mips.vp
+module `mname`();
+//; my $dut = generate_base("mips", "mips_module");
+  logic clk;
+  logic rstn;
+  logic [31:0] alu_out_final;
+
+
+  `$dut->instantiate()` (.*);
+  initial 
+    begin
+      clk = 1'b0;
+     forever #600 clk = ~clk;
+    end
+  initial
+    begin
+      rstn = 1'b0;
+      #600
+      rstn = 1'b0;
+      #600
+      rstn = 1'b1;
+    end
+  initial
+    begin
+      $dumpfile("dump.vcd");
+      $dumpvars;
+      for(int i=0; i<=20; i++)
+        begin
+          
+          @(negedge clk)$display("alu output %d", alu_out_final);
+        end
+      
+      #3000
+      $finish;
+    end
+endmodule

@@ -1,0 +1,7 @@
+//mux_2_1.vp
+module `mname`(
+  input logic [31:0] mux_input_1, mux_input_2,
+input logic mux_control,
+output logic [31:0] mux_out);
+  assign mux_out = (mux_control)?mux_input_1:mux_input_2;
+endmodule

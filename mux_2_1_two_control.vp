@@ -1,0 +1,13 @@
+//mux_2_1_two_control.vp
+module `mname`(
+input logic mux_control_1, mux_control_2,
+input logic [31:0] mux_input_1,mux_input_2,
+output logic [31:0] mux_output);
+ always_comb
+    begin
+       case({mux_control_1,mux_control_2})
+          2'b10: mux_output = mux_input_1;
+          2'b01: mux_output = mux_input_2;
+          endcase
+     end
+endmodule

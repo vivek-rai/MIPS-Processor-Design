@@ -1,0 +1,6 @@
+//adder.vp
+module `mname`(
+input logic [31:0] adder_input_a, adder_input_b,
+  output logic [31:0] adder_out);
+assign adder_out = adder_input_a + adder_input_b;
+endmodule

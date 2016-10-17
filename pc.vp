@@ -1,0 +1,18 @@
+//pc.vp
+module `mname`(
+  input logic clk,
+  input logic rstn,
+  input logic [31:0] pc_in,
+  output logic [31:0] pc_out);
+  logic [31:0] pc_reg;
+  always_ff@(posedge clk or negedge rstn)
+	begin
+      if(!rstn)
+	      pc_reg <= 32'd0;
+	else
+    pc_reg <= pc_in;
+	end
+  always_comb
+    $display("pc module %d time %t",pc_reg,$time);
+assign pc_out = pc_reg;
+endmodule

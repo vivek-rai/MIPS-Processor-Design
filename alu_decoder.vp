@@ -1,0 +1,37 @@
+//alu_deocder.vp
+module `mname`(
+input logic [6:0] alu_op,
+input logic [5:0] func,
+  output [7:0] alu_control_out,
+output logic jump_reg);
+  logic [7:0] alu_control;
+  always_comb
+    begin
+case(alu_op)
+	7'b0000001: alu_control = 8'b00000001;     //AddI
+	7'b0000010: alu_control = 8'b00000100;	   //AndI
+	7'b0000100: alu_control = 8'b00001000;	   //ORI
+	7'b0001000: alu_control = 8'b10000000;	   //SLTI
+	7'b0010000: alu_control = 8'b00010000;	   //XorI
+	7'b1000000: alu_control = 8'b00000010;	   //Substract Branch
+	7'b0100000:
+		begin
+			case(func)
+			7'b100000: alu_control = 8'b00000001;      //Add
+			7'b100010: alu_control = 8'b00000010;	    //Sub
+			7'b100100: alu_control = 8'b00000100;      //And
+			7'b100101: alu_control = 8'b00001000;      //Or
+			7'b100110: alu_control = 8'b00010000;      //Xor
+			7'b100111: alu_control = 8'b00100000;      //Nor
+			7'b000011: alu_control = 8'b01000000;      //SRA
+			7'b101010: alu_control = 8'b10000000;      //SLT
+			7'b001000: alu_control = 8'b00000000;      //Jump Register
+	        endcase	
+		end
+	endcase
+  end
+  //always_comb
+    //$display("alu control %d",alu_control);
+  assign jump_reg = ({alu_op,func} == 13'b0100000001000)?1'b1:1'b0;
+  assign alu_control_out = alu_control;
+endmodule
